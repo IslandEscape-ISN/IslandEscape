@@ -1,0 +1,155 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{fancyhdr}
+\usepackage{numprint}
+\pagestyle{fancy}
+\usepackage{lmodern,fixltx2e}
+\usepackage{verbatim}
+\usepackage{fancybox}
+\usepackage{moreverb}
+\usepackage{listings}
+\usepackage{pgfplots}
+\usepgfplotslibrary{dateplot}
+
+\pagestyle{empty}
+%Permet de désactiver la numérotation des sections
+\makeatletter
+\renewcommand{\thesection}{\@arabic\c@section}
+\makeatother
+
+\renewcommand{\footrulewidth}{1pt}
+\renewcommand{\headrulewidth}{0pt}
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+%Pied de page
+\fancyfoot[C]{IslandEscape} 
+\fancyfoot[L]{ISN 2014-2015}
+\fancyfoot[R]{\textbf{Page \thepage}}
+\def\num{\numprint}
+\definecolor{grey}{rgb}{0.95,0.95,0.95} % on définit la couleur grise (c'est un gris très clair)
+
+\title{IslandEscape}
+\author{Victor Amblard & Arnaud Robin}
+
+\begin{document}
+%Déclaration coloration syntaxique C#
+    \lstset{language={[Sharp]C},
+     			breaklines=true,
+     			backgroundcolor=\color{grey},
+                basicstyle=\ttfamily,
+                keywordstyle=\color{blue}\ttfamily,
+                stringstyle=\color{red}\ttfamily,
+                commentstyle=\color{green}\ttfamily,
+                morecomment=[l][\color{magenta}]{\#}
+}
+\begin{titlepage}
+
+ \begin{sffamily}
+  \begin{center}
+    \textsc{\Large Projet d'Informatique et Sciences du Numérique}\\[1.5cm]
+    \HRule \\[0.4cm]
+    { \huge \bfseries Island Escape\\[0.4cm] }
+
+    \HRule \\[2cm]
+    
+    \textsc{\LARGE Lycée Louis-le Grand}\\[2cm]
+    %\includegraphics[scale=0.25]{spash1.JPG}
+    
+    \begin{minipage}{0.4\textwidth}
+      \begin{flushleft} \large
+        Victor \textsc{AMBLARD}\\
+        Arnaud  \textsc{ROBIN}\\
+        TS1\\
+      \end{flushleft}
+    \end{minipage}
+    \begin{minipage}{0.3\textwidth}
+      \begin{flushright} \large
+        \emph{Professeur :}\\ M. SOEDIRMAN\\
+      \end{flushright}
+    \end{minipage}
+
+    \vfill
+       {\large Année 2014-2015}
+  \end{center}
+  \end{sffamily}
+\end{titlepage}
+\tableofcontents
+
+\part{Présentation du projet}
+\section{Genèse du projet}
+Pour notre projet, nous avons eu l'envie de créer un jeu de type \textit{Casual Gaming}, disponible sur multi-plateformes mais avant tout sur mobile. En effet, la plupart des jeux actuels sont développés sur ce nouvel outil. Les jeux y sont moins complets mais le public visé est plus large. On notera ainsi l'importance de ce type de jeu dans les trajets quotidiens, de nombreuses personnes jouant ainsi dans le métro, ou dès qu'ils ont moment de libre. Les grandes lignes du projet ayant été tracées, nous avons envisagé les différents thèmes qui s'offraient à nous.  Après quelques séances de réflexion, nous nous sommes mis d’accord sur le concept de base du jeu, un concept relativement simple : envoyer un projectile d’une plateforme à une autre. Nous avons ensuite imaginé un canon projetant des boulets d’une île à une autre, le but étant d’atteindre la plateforme suivante : \textit{\textbf{IslandEscape}} était né.\newline
+
+\section{Outils utilisés}
+Nous avons d'abord hésité sur le moteur de jeu à employer. Devions-nous partir de zéro et créer toutes les pièces utiles, telles que le moteur physique, la gestion de collision, l'exportation vers les plateformes ciblées, ou plutôt nous concentrer sur le \textit{gameplay}, le \textit{level design} et les graphismes ? Nous avons opté pour le second choix. Le moteur que nous avons sélectionné est \textit{Unity}, pour sa relative simplicité, sa bibliothèque importante et sa documentation très fournie. Unity est d'ailleurs livré avec le moteur physique PhysX\textregistered{} de Nvidia. On a ainsi préféré Unity à d'autres \textit{Developping Kits} comme \textit{UDK}. \newline
+
+Le logiciel de \textit{scripting} est celui de Unity, soit \textit{MonoDevelop}, le langage ainsi utilisé dans ce projet est le C\#. \newline
+
+Pour les graphismes, nous avons utilisé \textit{Adobe Illustrator}. Ce document est par ailleurs rédigé en \LaTeX.
+
+\part{Différentes phases}
+\section{Phase 1 : Gestion de la trajectoire du projectile}
+Scripts concernés : \textit{MoveScript.cs}, \textit{RotationScript.cs}, \textit{TranslationScript.cs}\newline
+\newline
+L'objet de la première phase a été de s'intéresser uniquement à 2 plateformes, toujours à la même distance, de même taille. Le jeu était relativement simple : un curseur angulaire puis un curseur vertical pour permettre au joueur de déterminer la puissance apparaissaient, on appliquait  ensuite une force sur le projectile correspondant aux paramètres choisis par le joueur.\\
+
+La puissance est obtenue par un curseur en translation horizontale sur un gradient de couleur allant du vert (le plus faible possible) au rouge (le plus puissant possible). Nous avions de premier abord réalisé une correspondance linéaire entre la position du curseur et la norme de la force appliquée au projectile. Néanmoins, ceci ne s'est pas avéré satisfaisant, en effet, le gradient ne permettait des variations linéaires de puissances pour  des distances de tir comprises dans un grand intervalle. Nous avons donc décidé d'utiliser une échelle logarithmique comme dans l'extrait de script suivant:
+
+ 
+  \begin{lstlisting}
+public float GetPosition () {
+
+	return Mathf.Log((position+1))/Mathf.Log((MAX_POS+1));
+}  \end{lstlisting}
+
+La variable \textit{position} correspond à la position du curseur sur l'axe vertical de translation et \textit{MAX\_POS} est la constante représentant son déplacement maximal. La fonction renvoie ainsi un réel dans $\left[0;1\right]$, correspondant au pourcentage de la puissance maximale à appliquer sur le projectile. Cette fonction a été définie ainsi pour faciliter le travail du joueur.
+
+\section{Phase 2 : Gestion de l'interruption de partie et de la fin de partie}
+Scripts concernés : \textit{DeathScript.cs}
+\section{Phase 3 : Déplacement de la caméra}
+Scripts concernés : \textit{Scrolling.cs}
+\section{Phase 4 : Ajout d'un menu}
+Scripts concernés : \textit{MenuScript.cs}
+\section{Phase 5 : Ajout de forces extérieures : le vent}
+Scripts concernés : \textit{SpawnScript.cs}, \textit{MoveScript.cs}\\
+\\
+Le vent est généré de manière aléatoire au delà du niveau 10 avec une probabilité \textit{ProbabiliteVent} de 40 \%. La force du vent est comprise dans l'intervalle \(\left[-5, 5\right]\). L'utilisateur est ensuite averti de la direction et de la vitesse du vent à l'aide d'un message texte. Le code utilisé est le suivant.
+  \begin{lstlisting}
+if (niveau.getLevel() > 10 && Random.Range (0, 100) < ProbabiliteVent) 
+{
+	wind=Random.Range (-windMaxX,windMaxX);
+	string dir;
+	if (wind > 0)
+		dir ="DOS";
+	else
+		dir="FACE";
+	wind= Mathf.RoundToInt(wind*100);
+	wind/=100;
+	text.text = "Wind : " + wind  + " Direction : " + dir;
+	}
+niveau.setWind (wind);
+\end{lstlisting}
+Le vent est ensuite appliqué de la même manière que le champ de pesanteur par l'intermédiaire d'une force constante exercée sur le projectile et dépendant de sa  masse. Cela permet d'avoir un mode de jeu plus réaliste
+\begin{lstlisting}
+Physics2D.gravity = new Vector2(niveau.getWind(), -9.81F);
+\end{lstlisting}
+\section{Phase 6 : Ajout de bonus}
+Scripts concernés : \textit{Bonus.cs}
+\section{Phase 7 : Ajout d'obstacles : les oiseaux}
+Scripts concernés : \textit{BirdScript.cs}\\
+\\
+La dernière phase de notre projet a été consacrée à la mise en place d'obstacles afin de rendre le jeu plus difficile.\\
+Pour limiter toutefois la difficulté de chaque niveau, nous avons décidé que les oiseaux ne pouvaient pas apparaître en même temps que du vent.
+\part{Améliorations}
+\section{Améliorations en cours}
+Nous sommes actuellement en train de travailler sur un menu d'achat d'améliorations. En effet l'ensemble des pièce accumulées au cours des différentes parties permettrait d'améliorer son tank ou bien d'acheter certains outils. Nous avons notamment pensé à la possibilité d'acheter un tank , des boulets de canon de taille (donc de poids différents), un fusil à oiseaux qui permettrait d'éliminer les oiseaux...\\
+Nous travaillons aussi tant bien que mal sur les graphismes de ces améliorations et essayons de créer des graphiques pour les oiseaux puisque nous avons pour l'instant utilisé les oiseaux du célèbre jeu Angry Bird.
+\section{Améliorations futures}
+\part{Conclusion}
+Version actuelle : V1.7
+
+\textbf{Améliorations en cours}\\
+ - création de graphiques supplémentaires (nouveaux projectiles)
+ - Gestion d'un menu "achat d'améliorations"
+ \\
+\end{document}
